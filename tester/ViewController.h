@@ -11,9 +11,10 @@
 
 @interface ViewController : UIViewController <MKMapViewDelegate, KPTreeControllerDelegate>
  
-@property (nonatomic, strong) IBOutlet MKMapView *mapView;
-@property (nonatomic) IBOutlet UISwitch *animationSwitch;
+@property (nonatomic, weak) IBOutlet MKMapView *mapView;
+@property (nonatomic, weak) IBOutlet UISwitch *animationSwitch;
 
 - (IBAction)resetAnnotations:(id)sender;
+- (IBAction)toggleClustering:(id)sender;
 
 @end

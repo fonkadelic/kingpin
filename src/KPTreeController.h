@@ -29,6 +29,7 @@
 @property (nonatomic) CGSize gridSize;
 @property (nonatomic) CGFloat animationDuration;
 @property (nonatomic) UIViewAnimationOptions animationOptions;
+@property (nonatomic, getter=isClusteringEnabled) BOOL clusteringEnabled;
 
 - (id)initWithMapView:(MKMapView *)mapView;
 - (void)setAnnotations:(NSArray *)annoations;

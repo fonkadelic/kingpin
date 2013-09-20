@@ -38,10 +38,11 @@
     self = [super init];
     
     if(self){
-        self.mapView = mapView;
-        self.mapFrame = self.mapView.frame;
-        self.gridSize = CGSizeMake(60.f, 60.f);
-        self.animationDuration = 0.5f;
+        _mapView = mapView;
+        _mapFrame = self.mapView.frame;
+        _gridSize = CGSizeMake(60.f, 60.f);
+        _animationDuration = 0.5f;
+        _clusteringEnabled = YES;
     }
     
     return self;
@@ -54,6 +55,9 @@
     [self _updateVisibileMapAnnotationsOnMapView:NO];
 }
 
+// only refresh if:
+// - the map has been zoomed
+// - the map has been panned significantly
 - (void)refresh:(BOOL)animated {
     
     if(MKMapRectIsNull(self.lastRefreshedMapRect) || [self _mapWasZoomed] || [self _mapWasPannedSignificantly]){
@@ -62,10 +66,6 @@
         self.lastRefreshedMapRegion = self.mapView.region;
     }
 }
-
-// only refresh if:
-// - the map has been zoomed
-// - the map has been panned significantly
 
 - (BOOL)_mapWasZoomed {
     return (fabs(self.lastRefreshedMapRect.size.width - self.mapView.visibleMapRect.size.width) > 0.1f);
@@ -87,9 +87,7 @@
 
 #pragma mark - Private
 
-- (void)_updateVisibileMapAnnotationsOnMapView:(BOOL)animated
-{
-    
+- (void)_updateVisibileMapAnnotationsOnMapView:(BOOL)animated {
     NSSet *visibleAnnotations = [self.mapView annotationsInMapRect:[self.mapView visibleMapRect]];
     
     // we initialize with a rough estimate for size, as to minimize allocations
@@ -115,16 +113,27 @@
 
             NSArray *newAnnotations = [self.annotationTree annotationsInMapRect:gridRect];
             
-            // cluster annotations in this grid piece, if there are annotations to be clustered
-            if(newAnnotations.count){
-
-                KPAnnotation *a = [[KPAnnotation alloc] initWithAnnotations:newAnnotations];
+            void (^addAnnotations)(NSArray *) = ^(NSArray *annotations) {
+                KPAnnotation *a = [[KPAnnotation alloc] initWithAnnotations:annotations];
                 
                 if([self.delegate respondsToSelector:@selector(treeController:configureAnnotationForDisplay:)]){
                     [self.delegate treeController:self configureAnnotationForDisplay:a];
                 }
                 
                 [newClusters addObject:a];
+            };
+            
+            if (self.isClusteringEnabled) {
+                // cluster annotations in this grid piece, if there are annotations to be clustered
+                if(newAnnotations.count) {
+                    addAnnotations(newAnnotations);
+                }
+            }
+            else {
+                // add annotation separately as single annotation
+                for (KPAnnotation *a in newAnnotations) {
+                    addAnnotations(@[a]);
+                }
             }
         }
     }

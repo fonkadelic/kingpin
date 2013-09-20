@@ -66,6 +66,12 @@ static const int kNumberOfTestAnnotations = 500;
     [self.treeController2 setAnnotations:[self annotations]];
 }
 
+- (void)toggleClustering:(id)sender
+{
+    self.treeController.clusteringEnabled = [sender isOn];
+    self.treeController2.clusteringEnabled = [sender isOn];
+}
+
 
 - (NSArray *)annotations {
     
